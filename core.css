@@ -5339,27 +5339,6 @@ button.close {
   -webkit-transform: translate(0, -25%);
   transform: translate(0, -25%);
 }
- 
-.modalRT {
-	 display: none;
-	 position: fixed;
-	 z-index: 9999; /* Set to a high value to ensure it's on top */
-	 padding-top: 100px;
-	 left: 0;
-	 top: 0;
-	 width: 100%;
-	 height: 100%;
-	 overflow: auto;
-	 background-color: rgba(0,0,0,0.4);
-}
-
-.modalRT-content {
-	 background-color: #fefefe;
-	 margin: auto;
-	 padding: 20px;
-	 border: 1px solid #888;
-	 width: 80%;
-}
 
 @media screen and (prefers-reduced-motion: reduce) {
   .modal.fade .modal-dialog {
@@ -7358,10 +7337,27 @@ button.bg-dark:focus {
   box-shadow: none !important;
 }
 
-.w-25 {
-  width: 25% !important;
-}
+.w-1p {
+  width: 1% !important; }
 
+.w-5p {
+  width: 5% !important; }
+
+.w-10p {
+  width: 10% !important; }
+
+.w-15p {
+  width: 15% !important; }
+
+.w-20p {
+  width: 20% !important; }
+
+.w-25p {
+  width: 25% !important; }
+
+.w-30p {
+  width: 30% !important; }
+  
 .w-50 {
   width: 50% !important;
 }
@@ -10356,19 +10352,6 @@ body.fixed-header .header {
   display: inline-block;
   vertical-align: bottom;
   border-radius: 50%;
-}
-
-.profile-avatar {
-  display:flex;
-  justify-content: center;
-  flex-direction: column;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.profile-avatar .img-avatar-statistics {
-  width:120px;
-  border-radius: 100%;
 }
 
 .header-btn {
@@ -18830,90 +18813,4 @@ svg {
   display: inline-block;
   -webkit-transform: translate(-100px, -100px) scale(1) translate(100px, 100px);
   transform: translate(-100px, -100px) scale(1) translate(100px, 100px);
-}
-
-.youtube-container {
-  position: relative;
-  width: 100%;
-  padding-bottom: 56.25%; 
-  height: 0;
-}
-.youtube-container iframe {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-}
-.wabutton {
-  background-color: #00E676; /* Green */
-  color: #fff;
-  transition: 1s ease-in-out;
-}
-.wabutton:hover {
-  transform: rotateY(360deg);
-  background-color: #50C248;
-  color: #fff;
-}
-
-.appiconps {
-  width: 150px;
-  height: 51px;
-  background: url("https://bestsmm.pk/assets/images/playstore.png") no-repeat;
-  display: inline-block;
-}
-
-.appiconps:hover {
-background: url("https://bestsmm.pk/assets/images/playstore2.png") no-repeat;
-}
-
-.appiconas {
-  width: 150px;
-  height: 51px;
-  background: url("https://bestsmm.pk/assets/images/appstore.png") no-repeat;
-  display: inline-block;
-}
-
-.appiconas:hover {
-background: url("https://bestsmm.pk/assets/images/appstore2.png") no-repeat;
-}
-
-.payicon {
-  width: 300px;
-  height: 51px;
-  background: url("https://bestsmm.pk/assets/images/payments.png") no-repeat;
-  display: inline-block;
-}
-
-.wafloating {
- position: fixed;
- width: 60px;
- height: 60px;
- bottom: 40px;
- right: 40px;
- background-color: #25d366;
- color: #fff;
- border-radius: 50px;
- text-align: center;
- font-size: 30px;
- box-shadow: 2px 2px 3px #999;
- z-index: 100;
-}
-
-.wafab-icon {
- margin-top: 16px;
-}
-
-.iframe-container {
-  position: relative;
-  width: 100%;
-  padding-bottom: 56.25%; 
-  height: 0;
-}
-.iframe-container iframe {
-  position: absolute;
-  top: 25%;
-  left: 0;
-  width: 100%;
-  height: 100%;
 }

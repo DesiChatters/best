@@ -113,6 +113,7 @@ function General(){
             }
             var _total_charge = (_total_quantity != "" && _service_price != "") ? (_total_quantity * _service_price)/1000 : 0;
             _total_charge = preparePrice(_total_charge);
+            
             var _currency_symbol = $("#new_order input[name=currency_symbol]").val();
             $("#new_order input[name=total_charge]").val(_total_charge);
             $("#new_order .total_charge span").html(_currency_symbol + _total_charge);
@@ -176,6 +177,7 @@ function General(){
                 $("#order_resume input[name=service_min]").val("");
                 $("#order_resume input[name=service_max]").val("");
                 $("#order_resume input[name=service_price]").val("");
+                $("#order_resume input[name=service_price_show]").val("");
                 $("#order_resume textarea[name=service_desc]").val("");
                 $("#order_resume #service_desc").val("");
                 $("#new_order input[name=service_price]").val("");
@@ -395,13 +397,11 @@ function General(){
 
                 break;
             }
-
             if (_dripfeed) {
                 $("#new_order .drip-feed-option").removeClass("d-none");
             } else {
                 $("#new_order .drip-feed-option").addClass("d-none");
             }
-
             var _action     = _that.data("url") + _id;
             var _data       = $.param({token:token});
             $.post( _action, _data,function(_result){
@@ -659,17 +659,30 @@ function General(){
                 setTimeout(function () {
                     pageOverlay.hide();
                 }, 1500)
-
+                
                 if (is_json(_result)) {
                     _result = JSON.parse(_result);
-                    setTimeout(function () {
-                        notify(_result.message, _result.status);
-                    }, 1500)
-                    setTimeout(function () {
-                        if (_result.status == 'success' && typeof _redirect != "undefined") {
-                            reloadPage(_redirect);
+                    if(_result.status == 'success' && _result.notification_type == 'place-order') {
+                        setTimeout(function () {
+                            show_success_message_place_order(_result);
+                        }, 1000);
+                    } else {
+                        if ($("#order_resume").length > 0) {
+                            if (!$(".order-success").hasClass('d-none')) {
+                                $(".order-success").addClass('d-none')
+                            }
                         }
-                    }, 2000)
+                        setTimeout(function () {
+                            notify(_result.message, _result.status);
+                        }, 1500);
+                        if (_result.status == 'success' && typeof _redirect != "undefined") {
+                            setTimeout(function () {
+                                reloadPage(_redirect);
+                            }, 2200);
+                        } else {
+                            grecaptcha.reset(); //New V4.1
+                        } 
+                    }
                 } else {
                     setTimeout(function () {
                         $("#result_notification").html(_result);
@@ -678,6 +691,41 @@ function General(){
             })
             return false;
         })
+
+        // Show success message on place order page
+        function show_success_message_place_order(data) {
+            var notification_area = $("#order-message-area");
+
+            var order_detail = data.order_detail;
+            notification_area.find(".order-success .id span").html(order_detail.id);
+            notification_area.find(".order-success .service_name span").html(order_detail.service_name);
+            notification_area.find(".order-success .charge span").html(order_detail.charge);
+            notification_area.find(".order-success .balance span").html(order_detail.balance);
+            
+            if (data.order_type == 'default') {
+                notification_area.find(".order-success .username").addClass('d-none');
+                notification_area.find(".order-success .posts").addClass('d-none');
+                notification_area.find(".order-success .link").removeClass('d-none');
+                notification_area.find(".order-success .quantity").removeClass('d-none');
+                
+                notification_area.find(".order-success .link span").html(order_detail.link);
+                notification_area.find(".order-success .quantity span").html(order_detail.quantity);
+            }
+
+            if (data.order_type == 'subscriptions') {
+                notification_area.find(".order-success .username").removeClass('d-none');
+                notification_area.find(".order-success .posts").removeClass('d-none');
+                notification_area.find(".order-success .link").addClass('d-none');
+                notification_area.find(".order-success .quantity").addClass('d-none');
+                
+                notification_area.find(".order-success .username span").html(order_detail.username);
+                notification_area.find(".order-success .posts span").html(order_detail.posts);
+            }
+            if ($(".order-success").hasClass('d-none')) {
+                $(".order-success").removeClass('d-none')
+            }
+            $(".user-balance").html(data.user_balance);
+        }
 
         // actionFormWithoutToast
         $(document).on("submit", ".actionFormWithoutToast", function(){

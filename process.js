@@ -18,7 +18,6 @@ var pageOverlay = pageOverlay || (function ($) {
 
 })(jQuery);
 
-
 var alertMessage = alertMessage || (function ($) {
   var $html = $('<div class="alert alert-icon content d-none" role="alert">' +
     '<i class="fe icon-symbol" aria-hidden="true"></i>' +
@@ -40,6 +39,11 @@ var alertMessage = alertMessage || (function ($) {
             _icon = 'fe-bell';
       }
       $('.alert-message-reponse').html($html);
+      if (_type == 'alert-success') {
+        $('.alert-message-reponse .content').removeClass('alert-warning');
+      } else {
+        $('.alert-message-reponse .content').removeClass('alert-success');
+      }
       $('.alert-message-reponse .content').addClass(_type);
       $('.alert-message-reponse .icon-symbol').addClass(_icon);
       $('.alert-message-reponse .content').removeClass('d-none');
@@ -111,11 +115,13 @@ function notify(_ms, _type) {
 }
 
 /*----------  Configure tinymce editor  ----------*/
+
+var fileManagerUrlElfinder = PATH + 'admin/file_manager/elfinder_init';
+
 function plugin_editor(selector, settings) {
   selector = typeof (selector) == 'undefined' ? '.tinymce' : selector;
   var _settings = {
     selector: selector,
-    menubar: false,
     theme: "modern",
     branding: false,
     paste_data_images: true,
@@ -131,18 +137,24 @@ function plugin_editor(selector, settings) {
       "insertdatetime nonbreaking save table contextmenu directionality",
       "emoticons template paste textcolor colorpicker textpattern"
     ],
-    toolbar1: "forecolor backcolor | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist | link image media | print preview emoticons",
-    // file_browser_callback: elFinderBrowser,
+    toolbar1: "undo redo formatselect | fontselect fontsizeselect | forecolor backcolor | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist | link image media | print preview emoticons | code codesample pagebreak",
+    style_formats: [
+      { title: 'Heading 2', format: 'h2' },
+      { title: 'Heading 3', format: 'h3' },
+      { title: 'Heading 4', format: 'h4' },
+      { title: 'Heading 5', format: 'h5' },
+      { title: 'Heading 6', format: 'h6' },
+      { title: 'Normal', block: 'div' }
+    ],
+    file_browser_callback: elFinderBrowser,
   }
 
   if (typeof (settings) != 'undefined') {
     for (var key in settings) {
-      if (key == 'append_plugins') {
-        _settings['plugins'].push(settings[key]);
-      } else if (key == 'toolbar') {
-        _settings['toolbar1'] = _settings['toolbar1'] + " " + settings[key];
-      } else {
+      if (key != 'append_plugins') {
         _settings[key] = settings[key];
+      } else {
+        _settings['plugins'].push(settings[key]);
       }
     }
   }
@@ -150,9 +162,10 @@ function plugin_editor(selector, settings) {
   return editor;
 }
 
+
 function elFinderBrowser(field_name, url, type, win) {
   tinymce.activeEditor.windowManager.open({
-    file: PATH + 'file_manager/elfinder_init',// use an absolute path!
+    file: fileManagerUrlElfinder,// use an absolute path!
     title: 'File manager',
     width: 900,
     height: 450,
@@ -165,6 +178,26 @@ function elFinderBrowser(field_name, url, type, win) {
   });
   return false;
 }
+
+/*----------  Upload media and return path to input selector  ----------*/
+function getPathMediaByelFinderBrowser(_this, default_selector) {
+  var _that = _this;
+  var _passToElement = typeof (default_selector) == 'undefined' ? _that.siblings('input') : default_selector;
+  tinymce.activeEditor.windowManager.open({
+    file: fileManagerUrlElfinder,
+    title: 'File manager',
+    width: 900,
+    height: 450,
+    resizable: 'yes',
+    inline: true
+  }, {
+    setUrl: function (url) {
+      _passToElement.val(url);
+    }
+  });
+  return false;
+}
+
 
 function sendXMLPostRequest($url, $params) {
   var Url = $url;
@@ -183,32 +216,13 @@ function sendXMLPostRequest($url, $params) {
   xhr.send(params);
 }
 
-/*----------  Upload media and return path to input selector  ----------*/
-function getPathMediaByelFinderBrowser(_this, default_selector) {
-  var _that = _this;
-  var _passToElement = typeof (default_selector) == 'undefined' ? _that.siblings('input') : default_selector;
-  tinymce.activeEditor.windowManager.open({
-    file: PATH + 'file_manager/elfinder_init',
-    title: 'File manager',
-    width: 900,
-    height: 450,
-    resizable: 'yes',
-    inline: true
-  }, {
-    setUrl: function (url) {
-      _passToElement.val(url);
-    }
-  });
-  return false;
-}
-
 /**
  * Call Ajax function with type option
  * @param {selector} element 
  * @param {url} url 
  * @param {option} type 
  */
- function callPostAjax(element, url, data, type, redirect = null) {
+function callPostAjax(element, url, data, type, redirect = null) {
   var data_type = (type == 'get-result-html') ? 'html' : 'json';
   $.post(url, data, function (_result) {
     switch (type) {
@@ -217,6 +231,9 @@ function getPathMediaByelFinderBrowser(_this, default_selector) {
         break;
       case 'status':
         notifyJS(element, _result.status, _result.message);
+        break;
+      case 'sort-table':
+        notify(_result.message, _result.status);
         break;
       case 'delete-item':
         pageOverlay.show();
@@ -297,7 +314,7 @@ function notifyJS(element, className, message, option) {
 function copyToClipBoard(params) {
   if (typeof (params) != 'undefined') {
     var $temp = $("<input>");
-    switch(params.type) {
+    switch (params.type) {
       case 'text':
         var copyText = $temp.val(params.value);
         break;
@@ -333,9 +350,9 @@ Number.prototype.countDecimals = function () {
   if (Math.floor(this.valueOf()) === this.valueOf()) return 0;
   var str = this.toString();
   if (str.indexOf(".") !== -1 && str.indexOf("-") !== -1) {
-      return str.split("-")[1] || 0;
+    return str.split("-")[1] || 0;
   } else if (str.indexOf(".") !== -1) {
-      return str.split(".")[1].length || 0;
+    return str.split(".")[1].length || 0;
   }
   return str.split("-")[1] || 0;
 }
@@ -346,33 +363,25 @@ function Common() {
     //Callback
     self.Common();
   };
-  /**
-   * From V3.6 for admin
-   */
+
+  // Common Function
   this.Common = function () {
     // search area
     var btnSearch = ".search-area button.btn-search",
-        btnClear = ".search-area button.btn-clear",
-        searchArea = $(".search-area"),
-        inputSearchQuery = $(".search-area input[name = query]");
+      btnClear = ".search-area button.btn-clear",
+      searchArea = $(".search-area"),
+      inputSearchQuery = $(".search-area input[name = query]");
 
     // Click Search
     $(document).on('click', btnSearch, function () {
-      var pathname = window.location.pathname; //Get pathname
-      var searchParams = new URLSearchParams(window.location.search);
-      var params = ['status'],
-        link = '';
+      searchResult();
+    });
 
-      $.each(params, function (key, value) {
-        if (searchParams.has(value)) {
-          link += value + "=" + searchParams.get(value) + "&"
-        }
-      });
-      var pathlink = pathname + "?" + link + "query=" + inputSearchQuery.val();
-      if (searchArea.find('option:selected').length  > 0 ) {
-        pathlink = pathlink + "&field=" + searchArea.find('option:selected').val();
+    // Enter key
+    inputSearchQuery.on('keyup', function (e) {
+      if (e.key === 'Enter' || e.keyCode === 13) {
+        searchResult();
       }
-      window.location.href = pathlink;
     });
 
     // Click Btn Clear Option
@@ -380,6 +389,25 @@ function Common() {
       var pathname = window.location.pathname; //Get pathname
       window.location.href = pathname
     });
+
+    function searchResult() {
+      var pathname = window.location.pathname; //Get pathname
+      var searchParams = new URLSearchParams(window.location.search);
+      var params = ['status'],
+        link = '';
+      $.each(params, function (key, value) {
+        if (searchParams.has(value)) {
+          link += value + "=" + searchParams.get(value) + "&"
+        }
+      });
+      var pathlink = pathname + "?" + link + "query=" + inputSearchQuery.val();
+      if (searchArea.find('option:selected').length > 0) {
+        pathlink = pathlink + "&field=" + searchArea.find('option:selected').val();
+      }
+      window.location.href = pathlink;
+    }
+
+
   }
 }
 

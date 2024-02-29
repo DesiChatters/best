@@ -18,7 +18,7 @@ function recatchStatus(orderId) {
     button.removeClass('btn-info').addClass('btn-danger');
 
     $.ajax({
-        url: "/admin/order/recheck/" + orderId,
+        url: "https://bestsmm.pk/cron/status_check_of_single_api_v_order/" + orderId,
         type: 'GET',
         success: function(response) {
             button.text(response);
